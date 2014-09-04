@@ -110,7 +110,8 @@
   tags: neutron
 
 - name: configure ovs ports
-  openvswitch_port: bridge={{ ovs_bridge }} port={{ ovs_port }} state=present
+#  openvswitch_port: bridge={{ ovs_bridge }} port={{ ovs_port }} state=present
+  openvswitch_port: bridge={{ neutron_ovs_bridges }} port={{ neutron_ovs_bridge_ifaces }} state=present
   when: use_neutron
   tags: neutron
 
