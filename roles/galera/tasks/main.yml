@@ -25,6 +25,12 @@
   tags: 
     - mysql-cleanup
 
+- name: checking if cluster is already setup
+  command: clustercheck
+  register: db_cluster_configured
+  ignore_errors: True
+  tags: mysql
+
 - name: install database and related packages
   yum: pkg={{ item }} state=present
   with_items:
@@ -32,66 +38,67 @@
     - MySQL-python
     - xinetd
     - nfs-utils
+  when: not db_cluster_configured
   tags: mysql
 
 - name: deploy clustercheck
   template: src=clustercheck.j2 dest=/etc/sysconfig/clustercheck mode=0644 owner=root group=root
+  when: not db_cluster_configured
   tags: mysql
 
 - name: deploy mariadb server config file with increased number of max_connections
   copy: src=server.cnf dest=/etc/my.cnf.d/server.cnf mode=0644 owner=root group=root
+  when: not db_cluster_configured
   tags: mysql
 
 - name: deploy galera.cnf on controllers
   template: src=galera.cnf.j2 dest=/etc/my.cnf.d/galera.cnf mode=0644 owner=root group=root
+  when: not db_cluster_configured
   tags: mysql
 
 - name: deploy galera-monitor config file
   copy: src=galera-monitor dest=/etc/xinetd.d/galera-monitor mode=0600 owner=root group=root
+  when: not db_cluster_configured
   tags: mysql
 
 - name: enable xinetd service
   service: name=xinetd enabled=yes state=started
+  when: not db_cluster_configured
   tags: mysql
-
-#- name: start local mariadb server
-#  service: name=mariadb state=started
-#  when: inventory_hostname == groups.controller[0]
-#  tags:
-#      - mysql
 
 - name: temporarily configure wsrep cluster address
   lineinfile: "dest=/etc/my.cnf.d/galera.cnf insertafter=EOF state=present line=wsrep_cluster_address=gcomm://"
-#  when: inventory_hostname == groups.controller[0]
+  when: not db_cluster_configured
   tags:
       - mysql
 
 - name: start local mariadb server
   service: name=mariadb state=restarted
-#  when: inventory_hostname == groups.controller[0]
+  when: not db_cluster_configured
   tags:
       - mysql
 
 - name: pause to let database start
-  pause: seconds=5
+  pause: seconds=10
   tags:
       - mysql
 
 - name: create clustercheck database user
   mysql_user: name={{ clustercheck_db_user }} host=localhost password={{ clustercheck_db_pass }} state=present
-#  when: inventory_hostname == groups.controller[0]
   run_once: true
+  when: not db_cluster_configured
   tags:
       - mysql
 
 - name: remove temporary wsrep cluster address
   lineinfile: "dest=/etc/my.cnf.d/galera.cnf insertafter=EOF state=absent line=wsrep_cluster_address=gcomm://"
-#  when: inventory_hostname == groups.controller[0]
+  when: not db_cluster_configured
   tags:
       - mysql
 
 - name: disable mariadb service
   service: name=mariadb enabled=no state=stopped
+  when: not db_cluster_configured
   tags: mysql
 
 - name: create pacemaker resource for galera
@@ -108,11 +115,13 @@
         options:
           timeout: 300s
           on-fail: block
+  when: not db_cluster_configured
   run_once: true
   tags: mysql
 
 - name: pause to let galera start and form the cluster
   pause: seconds=60
+  when: not db_cluster_configured
   tags: mysql
 
 - name: create databases
