@@ -231,11 +231,6 @@ ceilometer_private_vip: "{{ ceilometer_vip }}"
 ### Neutron parameters
 neutron_core_plugin: neutron.plugins.ml2.plugin.Ml2Plugin
 neutron_service_plugins:
-  - router
-  - firewall
-  - lbaas
-  - vpnaas
-  - metering
   - neutron.services.l3_router.l3_router_plugin.L3RouterPlugin
   - neutron.services.firewall.fwaas_plugin.FirewallPlugin
   - neutron.services.loadbalancer.plugin.LoadBalancerPlugin
