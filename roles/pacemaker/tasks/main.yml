@@ -7,6 +7,10 @@
     - pcs
   tags: pcs
 
+- name: start pcsd
+  service: name=pcsd enabled=yes state=stopped
+  tags: pcs
+
 - name: set password for the hacluster user
   user: name=hacluster password={{ pcs_cluster_pass_encoded }} update_password=always
   tags: pcs
@@ -38,4 +42,11 @@
   shell: pcs stonith show fence_{{ item.name }} || pcs stonith create fence_{{ item.name }} fence_{{ item.fencing.agent }} params login={{ item.fencing.login }} passwd='{{ item.fencing.passwd }}' action=reboot ipaddr={{ item.fencing.ipaddr }} port={{ item.fencing.port }} ssl="1" ssl_insecure="1" verbose="" pcmk_host_list={{ item.name }}
   with_items: controller_nodes
   run_once: true
+  when: use_fencing
+  tags: pcs_fencing
+
+- name: disabling fencing
+  shell: pcs property set stonith-enabled=false
+  run_once: true
+  when: not use_fencing
   tags: pcs_fencing
