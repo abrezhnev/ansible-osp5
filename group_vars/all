@@ -30,27 +30,27 @@ pcs_cluster_pass: CLEAR_TEXT
 pcs_cluster_pass_encoded: $1$azKoqr2X$NRnKMkeDSJIE2Kp7kGGUl/
 
 controller_node_names:
-  - actl1
-  - actl2
-  - actl3
+  - controller1
+  - controller2
+  - controller3
 
 controller_nodes:
-  - name: actl1
-    fqdn: actl1.cloud.local
-    addr_pub: 192.168.30.140
-    addr_int: 172.16.0.166
+  - name: controller1
+    fqdn: controller1.cloud.local
+    addr_pub: 192.168.30.11
+    addr_int: 172.16.0.11
     fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-1-1, ssl: 1, ssl_insecure: 1 }
 
-  - name: actl2
-    fqdn: actl2.cloud.local
-    addr_pub: 192.168.30.141
-    addr_int: 172.16.0.167
+  - name: controller2
+    fqdn: controller2.cloud.local
+    addr_pub: 192.168.30.12
+    addr_int: 172.16.0.12
     fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-1-2, ssl: 1, ssl_insecure: 1 }
 
-  - name: actl3
-    fqdn: actl3.cloud.local
-    addr_pub: 192.168.30.143
-    addr_int: 172.16.0.168
+  - name: controller3
+    fqdn: controller3.cloud.local
+    addr_pub: 192.168.30.13
+    addr_int: 172.16.0.13
     fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-2-1, ssl: 1, ssl_insecure: 1 }
 
 
@@ -64,7 +64,7 @@ lb_db_vip: 172.16.0.201
 
 # Galera cluster parameters
 wsrep_cluster_name: galera_cluster
-wsrep_cluster_address: "gcomm://actl1,actl2,actl3"
+wsrep_cluster_address: "gcomm://controller1,controller2,controller3"
 clustercheck_db_pass: SECRET
 
 # Passwords for database special users
@@ -79,9 +79,9 @@ heat_db_pass: SECRET
 
 ### memcache servers
 memcached_servers:
-  - '172.16.0.166:11211'
-  - '172.16.0.167:11211'
-  - '172.16.0.168:11211'
+  - '172.16.0.11:11211'
+  - '172.16.0.12:11211'
+  - '172.16.0.13:11211'
 
 
 ### Keystone
@@ -282,13 +282,13 @@ cisco_nexus_switches:
       - name: compute-06.cloud.local
         port: "port-channel:2"
 
-      - name: actl1.cloud.local
+      - name: controller1.cloud.local
         port: "port-channel:2"
 
-      - name: actl2.cloud.local
+      - name: controller2.cloud.local
         port: "port-channel:2"
 
-      - name: actl3.cloud.local
+      - name: controller3.cloud.local
         port: "port-channel:2"
 
   - ipaddr: 10.161.0.22
@@ -314,13 +314,13 @@ cisco_nexus_switches:
       - name: compute-06.cloud.local
         port: "port-channel:2"
 
-      - name: actl1.cloud.local
+      - name: controller1.cloud.local
         port: "port-channel:2"
 
-      - name: actl2.cloud.local
+      - name: controller2.cloud.local
         port: "port-channel:2"
 
-      - name: actl3.cloud.local
+      - name: controller3.cloud.local
         port: "port-channel:2"
 
 ### Horizon
