@@ -80,7 +80,7 @@
 #  tags: keystone
 
 - name: run dbsync for keystone
-  shell: su -s /bin/sh -c '/usr/bin/keystone-manage db_sync' keystone
+  shell: su keystone -s /bin/sh -c "/usr/bin/keystone-manage db_sync"
   run_once: true
   tags: keystone
 
