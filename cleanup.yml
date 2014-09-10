@@ -1,0 +1,41 @@
+---
+- hosts: controller
+  tasks:
+
+  - name: delete pacemaker resource for galera
+    command: pcs resource delete galera2 --force
+    run_once: true
+    ignore_errors: True
+    tags:
+        - mysql
+
+  - name: stop local mariadb server
+    service: name=mariadb state=stopped
+    ignore_errors: True
+    tags:
+      - mysql
+
+  - name: kill all mysql processes
+    command: killall mysqld
+    ignore_errors: True
+    tags:
+      - mysql
+
+  - name: remove database and related packages
+    yum: pkg={{ item }} state=absent
+    ignore_errors: True
+    with_items:
+      - mariadb-galera-server
+      - MySQL-python
+      - xinetd
+      - nfs-utils
+    tags: 
+      - mysql
+
+  - name: remove mysql directory
+    file: force=yes path=/var/lib/mysql recurse=yes state=absent
+#    command: rm -rf /var/lib/mysql/
+    ignore_errors: True
+    tags: 
+      - mysql
+
