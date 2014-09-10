@@ -4,4 +4,3 @@
 
 - name: reload kernel parameters
   command: systemctl restart systemd-sysctl
-
