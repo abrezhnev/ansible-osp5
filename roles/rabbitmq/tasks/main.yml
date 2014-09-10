@@ -52,7 +52,9 @@
   tags: rabbitmq
 
 - name: set rabbitmq HA policy
-  rabbitmq_policy: name=HA pattern='^(?!amq\.).*' tags="ha-mode=all"
+#  rabbitmq_policy: name=HA pattern='^(?!amq\.).*' tags="ha-mode=all"
+#  This must be done manually as the rabbitmq_policy uses a --priority option which was introduced in rabbitmq 3.2, where rhel osp 5 uses 3.1
+  command: rabbitmqctl set_policy HA "^(?!amq\.).*" '{"ha-mode":"all"}'
   run_once: true
   tags: rabbitmq
 
