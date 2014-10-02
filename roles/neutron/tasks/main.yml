@@ -1,4 +1,9 @@
 ---
+- name: download bridge create script
+  get_url: url=http://raw.githubusercontent.com/redhat-openstack/astapor/master/bin/bridge-create.sh dest=/root/bridge-create.sh
+  when: use_neutron
+  tags: neutron
+
 - name: install neutron packages
   yum: pkg={{ item }} state=present
   with_items:
@@ -111,6 +116,11 @@
 
 - name: configure ovs ports
   openvswitch_port: bridge={{ ovs_bridge }} port={{ ovs_port }} state=present
+  when: use_neutron
+  tags: neutron
+
+- name: run bridge-create script
+  command: bash /root/bridge-create.sh br-ex {{ ovs_port }}
   when: use_neutron
   tags: neutron
 
