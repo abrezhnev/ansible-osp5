@@ -7,7 +7,8 @@
     - xinetd
     - nfs-utils
       # The following is needed for the galera resource agent, if outside VPN download this file ahead of time
-    - http://download.devel.redhat.com/brewroot/packages/resource-agents/3.9.5/26.el7_0.2/x86_64/resource-agents-3.9.5-26.el7_0.2.x86_64.rpm
+      #    - http://download.devel.redhat.com/brewroot/packages/resource-agents/3.9.5/26.el7_0.2/x86_64/resource-agents-3.9.5-26.el7_0.2.x86_64.rpm
+    - http://download.devel.redhat.com/brewroot/packages/resource-agents/3.9.5/31.el7/x86_64/resource-agents-3.9.5-31.el7.x86_64.rpm
   tags: mysql
 
 - name: deploy clustercheck
@@ -20,6 +21,11 @@
   ignore_errors: True
   tags: mysql
 
+- name: deploy local galera.cnf on controllers
+  template: src=galera-local.cnf.j2 dest=/etc/my.cnf.d/galera.cnf mode=0644 owner=root group=root
+  when: db_running.rc != 0
+  tags: mysql
+
 - name: start local mariadb server
   service: name=mariadb state=started
   when: db_running.rc != 0
@@ -27,7 +33,7 @@
     - mysql
 
 - name: pause to let database start
-  pause: seconds=10
+  pause: seconds=5
   when: db_running.rc != 0
   tags:
       - mysql
@@ -76,6 +82,7 @@
 
 - name: pause to let galera start and form the cluster
   pause: seconds=60
+  when: db_running.rc != 0
   tags: mysql
 
 - name: create databases
