@@ -8,6 +8,11 @@
   notify: reload kernel parameters
   tags: haproxy
 
+- name: reload kernel parameters
+  # Added so haproxy resource can start right away rather than handler doing it later
+  command: systemctl restart systemd-sysctl
+  tags: haproxy
+
 - name: set haproxy config file
   template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
   notify: restart haproxy
