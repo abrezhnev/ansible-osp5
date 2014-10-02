@@ -3,7 +3,7 @@
   tasks:
 
   - name: delete pacemaker resource for galera
-    command: pcs resource delete galera2 --force
+    command: pcs resource delete galera --force
     run_once: true
     ignore_errors: True
     tags:
