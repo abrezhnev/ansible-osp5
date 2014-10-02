@@ -39,3 +39,8 @@
     tags: 
       - mysql
 
+  - name: remove clustercheck config file
+    file: force=yes path=/etc/sysconfig/clustercheck state=absent
+    ignore_errors: True
+    tags: 
+      - mysql
