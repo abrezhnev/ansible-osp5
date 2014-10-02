@@ -1,0 +1,109 @@
+---
+- hosts: 
+    - controller
+    - compute
+  handlers:
+    - name: restart ntpd
+      service: name=ntpd state=restarted
+    
+  tasks:
+    - name: enable ssh key-based access
+      authorized_key: user=root key="{{ item }}"
+      with_file: ~/.ssh/id_rsa.pub
+      tags: 
+        - prep
+        - ssh
+    
+#    - name: register with RHN
+#      redhat_subscription: state=present username=<user> password=<password>
+#      tags: rhn
+
+    - name: set selinux policy and mode
+      selinux: policy=targeted state=permissive
+    
+#    - name: set yum repos
+#      copy: src={{ item }} dest=/etc/yum.repos.d
+#      with_items:
+#        - rhel-x86_64-server-7.repo
+#        - osp5.repo
+#      when: ansible_distribution_version == "7.0"
+    
+    - name: install ntp
+      yum: pkg=ntp state=installed
+      tags: ntp
+    
+    - name: configure ntp service
+      template: src=ntp.conf.j2 dest=/etc/ntp.conf force=yes
+      notify:
+        - restart ntpd
+      tags:
+        - prep
+        - ntp
+    
+    - name: sync time from {{ ntp }}
+      command: ntpdate -bu {{ ntp | join(" ") }}
+      tags:
+        - prep
+        - ntp
+    
+    - name: start ntpd service
+      service: name=ntpd enabled=yes state=started
+      tags: 
+        - prep
+        - ntp
+    
+    - name: disable NetworkManager
+      service: name=NetworkManager state=stopped enabled=no
+      tags: 
+        - prep
+        - network
+    
+    - name: disable firewalld
+      service: name=firewalld state=stopped enabled=no
+      tags: 
+        - prep
+        - firewall
+    
+    - name: install iptables services
+      yum: pkg=iptables-services state=installed
+      tags: 
+        - prep
+        - firewall
+    
+    - name: enable iptables
+      service: name=iptables state=started enabled=yes
+      tags: 
+        - prep
+        - firewall
+    
+    - name: build hosts file
+      lineinfile: 
+        dest="/etc/hosts" 
+        insertafter=EOF
+        line="{{ hostvars[item][ 'ansible_' + private_if].ipv4.address }}     {{ hostvars[item].ansible_fqdn }}     {{ hostvars[item].ansible_hostname }}"
+        state=present
+      with_items: groups.controller + groups.compute
+      tags: 
+        - prep
+
+    - name: allow access for private network
+      # Look into using a template instead
+      lineinfile: 
+        dest=/etc/sysconfig/iptables
+        insertafter="^:OUTPUT " 
+        regexp="-A INPUT -s {{ hostvars[item][ 'ansible_' + private_if].ipv4.address }}/32 -j ACCEPT" 
+        line="-A INPUT -s {{ hostvars[item][ 'ansible_' + private_if].ipv4.address }}/32 -j ACCEPT" 
+        state=present
+        backup=yes
+      with_items: groups.controller + groups.compute
+      tags: 
+        - prep
+        - firewall
+
+    - name: restart iptables 
+      # need to convert this into a notify once prep is converted to a role
+      service: name=iptables state=restarted
+      tags: 
+        - prep
+        - firewall
+
