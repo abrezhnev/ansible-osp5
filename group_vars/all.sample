@@ -1,9 +1,7 @@
 ---
 ### NTP servers
 ntp: 
-  - 0.rhel.pool.ntp.org
-  - 1.rhel.pool.ntp.org
-  - 2.rhel.pool.ntp.org
+  - 192.168.100.250
 
 ### OpenStack control plane configuration
 use_ha_controller: true
@@ -37,20 +35,20 @@ controller_node_names:
 controller_nodes:
   - name: controller1
     fqdn: controller1.cloud.local
-    addr_pub: 192.168.30.11
-    addr_int: 172.16.0.11
+    addr_pub: 192.168.100.51
+    addr_int: 172.16.0.51
     fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-1-1, ssl: 1, ssl_insecure: 1 }
 
   - name: controller2
     fqdn: controller2.cloud.local
-    addr_pub: 192.168.30.12
-    addr_int: 172.16.0.12
+    addr_pub: 192.168.100.52
+    addr_int: 172.16.0.52
     fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-1-2, ssl: 1, ssl_insecure: 1 }
 
   - name: controller3
     fqdn: controller3.cloud.local
-    addr_pub: 192.168.30.13
-    addr_int: 172.16.0.13
+    addr_pub: 192.168.100.53
+    addr_int: 172.16.0.53
     fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-2-1, ssl: 1, ssl_insecure: 1 }
 
 
@@ -79,9 +77,9 @@ heat_db_pass: SECRET
 
 ### memcache servers
 memcached_servers:
-  - '172.16.0.11:11211'
-  - '172.16.0.12:11211'
-  - '172.16.0.13:11211'
+  - '172.16.0.51:11211'
+  - '172.16.0.52:11211'
+  - '172.16.0.53:11211'
 
 
 ### Keystone
@@ -167,28 +165,28 @@ vip_addresses:
     addr: 172.16.0.209
 
   - name: vip-keystone-pub
-    addr: 192.168.30.200
+    addr: 192.168.100.200
 
   - name: vip-glance-pub
-    addr: 192.168.30.201
+    addr: 192.168.100.201
 
   - name: vip-cinder-pub
-    addr: 192.168.30.202
+    addr: 192.168.100.202
 
   - name: vip-nova-pub
-    addr: 192.168.30.203
+    addr: 192.168.100.203
 
   - name: vip-neutron-pub
-    addr: 192.168.30.204
+    addr: 192.168.100.204
 
   - name: vip-horizon-pub
-    addr: 192.168.30.205
+    addr: 192.168.100.205
 
   - name: vip-heat-pub
-    addr: 192.168.30.206
+    addr: 192.168.100.206
 
   - name: vip-ceilometer-pub
-    addr: 192.168.30.207
+    addr: 192.168.100.207
 
 
 keystone_vip: 172.16.0.202
@@ -200,34 +198,34 @@ horizon_vip: 172.16.0.207
 heat_vip: 172.16.0.208
 ceilometer_vip: 172.16.0.209
 
-keystone_public_vip: "192.168.30.200"
+keystone_public_vip: "192.168.100.200"
 keystone_admin_vip: "{{ keystone_vip }}"
 keystone_private_vip: "{{ keystone_vip }}"
 
-glance_public_vip: "192.168.30.201"
+glance_public_vip: "192.168.100.201"
 glance_admin_vip: "{{ glance_vip }}"
 glance_private_vip: "{{ glance_vip }}"
 
-cinder_public_vip: "192.168.30.202"
+cinder_public_vip: "192.168.100.202"
 cinder_admin_vip: "{{ cinder_vip }}"
 cinder_private_vip: "{{ cinder_vip }}"
 
-nova_public_vip: "192.168.30.203"
+nova_public_vip: "192.168.100.203"
 nova_admin_vip: "{{ nova_vip }}"
 nova_private_vip: "{{ nova_vip }}"
 
-neutron_public_vip: "192.168.30.204"
+neutron_public_vip: "192.168.100.204"
 neutron_admin_vip: "{{ neutron_vip }}"
 neutron_private_vip: "{{ neutron_vip }}"
 
-horizon_public_vip: "192.168.30.205"
+horizon_public_vip: "192.168.100.205"
 horizon_private_vip: "{{ horizon_vip }}"
 
-heat_public_vip: "192.168.30.206"
+heat_public_vip: "192.168.100.206"
 heat_admin_vip: "{{ heat_vip }}"
 heat_private_vip: "{{ heat_vip }}"
 
-ceilometer_public_vip: "192.168.30.207"
+ceilometer_public_vip: "192.168.100.207"
 ceilometer_admin_vip: "{{ ceilometer_vip }}"
 ceilometer_private_vip: "{{ ceilometer_vip }}"
 
