@@ -5,11 +5,13 @@
     - openstack-nova-common
     - python-nova
     - python-novaclient
-  tags: nova
+  tags:
+    - nova-common
 
 - name: deploy nova config files
   template: src={{ item.src }} dest={{ item.dest }} mode=0640 owner=root group=nova
   with_items:
     - { src: nova.conf.j2, dest: /etc/nova/nova.conf }
     - { src: api-paste.ini.j2, dest: /etc/nova/api-paste.ini }
-  tags: nova
+  tags:
+    - nova-common
