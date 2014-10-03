@@ -33,8 +33,7 @@
       - mysql
 
   - name: remove mysql directory
-    file: force=yes path=/var/lib/mysql recurse=yes state=absent
-#    command: rm -rf /var/lib/mysql/
+    file: force=yes path=/var/lib/mysql/ state=absent
     ignore_errors: True
     tags: 
       - mysql

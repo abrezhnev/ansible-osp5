@@ -16,27 +16,27 @@
   ignore_errors: True
   tags: mysql
 
-#- name: deploy local galera.cnf on controllers
-#  template: src=galera-local.cnf.j2 dest=/etc/my.cnf.d/galera.cnf mode=0644 owner=root group=root
-#  when: db_running.rc != 0
-#  tags: mysql
-#
-#- name: start local mariadb server
-#  service: name=mariadb state=started
-#  when: db_running.rc != 0
-#  tags:
-#    - mysql
-#
-#- name: pause to let database start
-#  pause: seconds=5
-#  when: db_running.rc != 0
-#  tags:
-#      - mysql
-#
-#- name: stop and disable mariadb service
-#  service: name=mariadb enabled=no state=stopped
-#  tags: mysql
-#
+- name: deploy local galera.cnf on controllers
+  template: src=galera-local.cnf.j2 dest=/etc/my.cnf.d/galera.cnf mode=0644 owner=root group=root
+  when: db_running.rc != 0
+  tags: mysql
+
+- name: start local mariadb server
+  service: name=mariadb state=started
+  when: db_running.rc != 0
+  tags:
+    - mysql
+
+- name: pause to let database start
+  pause: seconds=5
+  when: db_running.rc != 0
+  tags:
+      - mysql
+
+- name: stop and disable mariadb service
+  service: name=mariadb enabled=no state=stopped
+  tags: mysql
+
 - name: deploy mariadb server config file with increased number of max_connections
   copy: src=server.cnf dest=/etc/my.cnf.d/server.cnf mode=0644 owner=root group=root
   tags: mysql
@@ -82,7 +82,6 @@
 
 - name: deploy clustercheck
   template: src=clustercheck.j2 dest=/etc/sysconfig/clustercheck mode=0644 owner=root group=root
-  run_once: true
   tags: mysql
 
 - name: create databases
