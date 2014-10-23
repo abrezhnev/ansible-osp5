@@ -28,7 +28,7 @@
     - mysql
 
 - name: pause to let database start
-  pause: seconds=5
+  pause: seconds=60
   when: db_running.rc != 0
   tags:
       - mysql
@@ -71,7 +71,7 @@
   tags: mysql
 
 - name: pause to let galera start and form the cluster
-  pause: seconds=60
+  pause: seconds=120
   when: db_running.rc != 0
   tags: mysql
 
