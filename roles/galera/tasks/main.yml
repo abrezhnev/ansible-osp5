@@ -53,6 +53,10 @@
   service: name=xinetd enabled=yes state=started
   tags: mysql
 
+- name: disable mariadb service
+  service: name=mariadb enabled=no
+  tags: mysql
+
 - name: create pacemaker resource for galera
   pcs_resource: command=create name=galera type=galera master=yes
   args:
