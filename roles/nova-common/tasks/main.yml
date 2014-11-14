@@ -5,7 +5,8 @@
     - openstack-nova-common
     - python-nova
     - python-novaclient
-  tags: nova
+  tags:
+    - nova-common
 
 - name: install rabbitmq driver
   yum: pkg=python-kombu state=present
@@ -19,4 +20,5 @@
   with_items:
     - { src: nova.conf.j2, dest: /etc/nova/nova.conf }
     - { src: api-paste.ini.j2, dest: /etc/nova/api-paste.ini }
-  tags: nova
+  tags:
+    - nova-common

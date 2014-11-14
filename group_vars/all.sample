@@ -1,123 +1,100 @@
 ---
-### OpenStack control plane configuration
+### NTP servers
+ntp: 
+  - 192.168.100.250
 
-# select OpenStack release: havana, icehouse
-openstack_release: icehouse
+### OpenStack control plane configuration
 use_ha_controller: true
-use_rabbit: true
-use_ha_db: true
+use_fencing: false
 use_galera: true
+use_rabbit: true
 use_ceph: false
 use_swift: false
-use_cinder_nfs_driver: true
 use_netapp: false
-# select Nova Network or Neutron
 use_nova_network: false
+use_ceilometer: true
 use_neutron: true
-# havana: select ovs or other Neutron standalone plugin
-# icehouse: select ml2 and its plugins or a standalone Neutron plugin like Cisco Nexus
 use_neutron_ml2: true
-use_neutron_ovs: true
 use_neutron_cisco: false
 use_lbaas: true
 use_heat: true
 use_ceilometer: true
-
-
-### Network interface assignment
-# any deviations for individual hosts should be specified in the host_vars or inventory files
-primary_if: bond0.1612
-private_if: bond0.1610
-tunnel_if: bond0.1613
-
-
-### NTP servers
-ntp: 
-  - 0.rhel.pool.ntp.org
-  - 1.rhel.pool.ntp.org
-  - 2.rhel.pool.ntp.org
-
+cisco_provider_vlan_auto_create: false
+cisco_provider_vlan_auto_trunk: false
 
 ### Pacemaker cluster
 pcs_cluster_name: SOME_CLUSTER_NAME
-pcs_cluster_pass: "{{ lookup('password', inventory_dir + '/credentials/pcs_cluster_pass chars=ascii_letters,digits') }}"
-pcs_cluster_pass_encoded: "{{ lookup('file', inventory_dir + '/credentials/pcs_cluster_pass_encoded') }}"
+pcs_cluster_pass: CLEAR_TEXT
+pcs_cluster_pass_encoded: $1$azKoqr2X$NRnKMkeDSJIE2Kp7kGGUl/
 
-# short domain names of the controller nodes
 controller_node_names:
-  - controller-01
-  - controller-02
-  - controller-03
+  - controller1
+  - controller2
+  - controller3
 
-# The value of the fencing parameter below depends from the type of the fencing agent.
-# Here are few examples for different agent types:
-# fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
-# fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-1-1, ssl: 1, ssl_insecure: 1 }
-#
 controller_nodes:
-  - name: controller-01
-    fqdn: controller-01.example.com
-    addr_pub: 172.16.22.23
-    addr_int: 172.16.20.23
-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.23 lanplus='' verbose=''" }
+  - name: controller1
+    fqdn: controller1.cloud.local
+    addr_pub: 192.168.100.51
+    addr_int: 172.16.0.51
+    fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-1-1, ssl: 1, ssl_insecure: 1 }
 
-  - name: controller-02
-    fqdn: controller-02.example.com
-    addr_pub: 172.16.22.24
-    addr_int: 172.16.20.24
-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.24 lanplus='' verbose=''" }
+  - name: controller2
+    fqdn: controller2.cloud.local
+    addr_pub: 192.168.100.52
+    addr_int: 172.16.0.52
+    fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-1-2, ssl: 1, ssl_insecure: 1 }
 
-  - name: controller-03
-    fqdn: controller-03.example.com
-    addr_pub: 172.16.22.24
-    addr_int: 172.16.20.25
-    fencing: { agent: ipmilan, params: "login=root passwd=calvin ipaddr=172.31.0.25 lanplus='' verbose=''" }
+  - name: controller3
+    fqdn: controller3.cloud.local
+    addr_pub: 192.168.100.53
+    addr_int: 172.16.0.53
+    fencing: { agent: cisco_ucs, login: pacemaker, passwd: 'SECRET', ipaddr: 10.161.0.50, suborg: org-Controller, port: Profile-CT-2-1, ssl: 1, ssl_insecure: 1 }
 
 
 ### Messaging
-rabbit_host: 172.16.20.14
+rabbit_host: 172.16.0.200
 rabbit_port: 5672
-rabbit_node_names: "{{ controller_node_names }}"
+
 
 ### Database
-lb_db_vip: 172.16.20.13
+lb_db_vip: 172.16.0.201
 
 # Galera cluster parameters
 wsrep_cluster_name: galera_cluster
-wsrep_cluster_address: "gcomm://{{ controller_node_names | join(',') }}"
-clustercheck_db_pass: "{{ lookup('password', inventory_dir + '/credentials/clustercheck_db_pass chars=ascii_letters,digits') }}"
+wsrep_cluster_address: "gcomm://controller1,controller2,controller3"
+clustercheck_db_pass: SECRET
 
 # Passwords for database special users
-db_root_password: "{{ lookup('password', inventory_dir + '/credentials/db_root_password chars=ascii_letters,digits') }}"
-keystone_db_pass: "{{ lookup('password', inventory_dir + '/credentials/keystone_db_pass chars=ascii_letters,digits') }}"
-glance_db_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_db_pass chars=ascii_letters,digits') }}"
-cinder_db_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_db_pass chars=ascii_letters,digits') }}"
-nova_db_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_db_pass chars=ascii_letters,digits') }}"
-neutron_db_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_db_pass chars=ascii_letters,digits') }}"
-heat_db_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_db_pass chars=ascii_letters,digits') }}"
+db_root_password: SECRET
+keystone_db_pass: SECRET
+glance_db_pass: SECRET
+cinder_db_pass: SECRET
+nova_db_pass: SECRET
+neutron_db_pass: SECRET
+heat_db_pass: SECRET
 
 
 ### memcache servers
 memcached_servers:
-  - '172.16.20.23:11211'
-  - '172.16.20.24:11211'
-  - '172.16.20.25:11211'
+  - '172.16.0.51:11211'
+  - '172.16.0.52:11211'
+  - '172.16.0.53:11211'
 
-### MongoDB servers (use domain names)
-mongodb_servers: "{{ controller_node_names }}"
 
 ### Keystone
-keystone_admin_token: "{{ lookup('password', inventory_dir + '/credentials/keystone_admin_token chars=hexdigits') }}"
+# generated by 'openssl rand -hex 10'
+keystone_admin_token: SECRET
 
 # passwords for special OpenStack users
-admin_pass: "{{ lookup('password', inventory_dir + '/credentials/admin_pass chars=ascii_letters,digits') }}"
-glance_pass: "{{ lookup('password', inventory_dir + '/credentials/glance_pass chars=ascii_letters,digits') }}"
-cinder_pass: "{{ lookup('password', inventory_dir + '/credentials/cinder_pass chars=ascii_letters,digits') }}"
-swift_pass: "{{ lookup('password', inventory_dir + '/credentials/swift_pass chars=ascii_letters,digits') }}"
-neutron_pass: "{{ lookup('password', inventory_dir + '/credentials/neutron_pass chars=ascii_letters,digits') }}"
-nova_pass: "{{ lookup('password', inventory_dir + '/credentials/nova_pass chars=ascii_letters,digits') }}"
-heat_pass: "{{ lookup('password', inventory_dir + '/credentials/heat_pass chars=ascii_letters,digits') }}"
-ceilometer_pass: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_pass chars=ascii_letters,digits') }}"
+admin_pass: SECRET
+glance_pass: SECRET
+cinder_pass: SECRET
+swift_pass: SECRET
+neutron_pass: SECRET
+nova_pass: SECRET
+heat_pass: SECRET
+ceilometer_pass: SECRET
 
 
 ### Nova
@@ -126,42 +103,29 @@ nova_vlan_start: 74
 nova_vlan_interface: "{{ private_if }}"
 
 # specific for neutron based network implementation
-# disable security group
-nova_security_group_api: noop
-#nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-nova_firewall_driver: nova.virt.firewall.NoopFirewallDriver
+nova_security_group_api: neutron
+nova_firewall_driver: neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 
 # storage related
-nova_libvirt_images_type: rbd
-nova_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
+#nova_libvirt_images_type: rbd
 
 # ceilometer related
 nova_notify_on_state_change: vm_and_task_state
 
 
 ### Glance
-#default_store: file
-default_store: rbd
-
-# ceph backend settings
-glance_rbd_user: images
-glance_rbd_pool: images
-rbd_secret_uuid: 522e17af-794c-4db9-95ae-884c48f24b13
-
-# for Havana only: use qpid or rabbit for communication with ceilometer
-#glance_notifier_strategy: qpid
-glance_notifier_strategy: rabbit
+#default_store: rbd
+#rbd_secret_uuid: 457eb676-33da-42ec-9a8c-9293d545c337
+default_store: file
 
 
 ### Cinder
-# ceph backend settings
-cinder_rbd_user: volumes
-cinder_rbd_pool: volumes
-
 # NetApp driver parameters
 netapp_login: LOGIN
 netapp_password: SECRET
 netapp_vserver: VSERVER_NAME
+netapp_password: SECRET
+netapp_vserver: netapp.cloud.local
 netapp_server_hostname: '10.161.0.220'
 netapp_storage_protocol: iscsi
 netapp_transport_type: https
@@ -170,98 +134,98 @@ netapp_transport_type: https
 ### HAproxy parameters
 # pacemaker IPaddr2 resources for HAproxy
 vip_addresses:
-  - name: vip-db
-    addr: 172.16.20.13
-
   - name: vip-msg
-    addr: 172.16.20.14
+    addr: 172.16.0.200
+
+  - name: vip-db
+    addr: 172.16.0.201
 
   - name: vip-keystone-int
-    addr: 172.16.20.20
+    addr: 172.16.0.202
 
   - name: vip-glance-int
-    addr: 172.16.20.17
+    addr: 172.16.0.203
 
   - name: vip-cinder-int
-    addr: 172.16.20.16
+    addr: 172.16.0.204
 
   - name: vip-nova-int
-    addr: 172.16.20.22
+    addr: 172.16.0.205
 
   - name: vip-neutron-int
-    addr: 172.16.20.21
+    addr: 172.16.0.206
 
   - name: vip-horizon-int
-    addr: 172.16.20.19
+    addr: 172.16.0.207
 
   - name: vip-heat-int
-    addr: 172.16.20.18
+    addr: 172.16.0.208
 
   - name: vip-ceilometer-int
-    addr: 172.16.20.15
+    addr: 172.16.0.209
 
   - name: vip-keystone-pub
-    addr: 172.16.22.20
+    addr: 192.168.100.200
 
   - name: vip-glance-pub
-    addr: 172.16.22.17
+    addr: 192.168.100.201
 
   - name: vip-cinder-pub
-    addr: 172.16.22.16
+    addr: 192.168.100.202
 
   - name: vip-nova-pub
-    addr: 172.16.22.22
+    addr: 192.168.100.203
 
   - name: vip-neutron-pub
-    addr: 172.16.22.21
+    addr: 192.168.100.204
 
   - name: vip-horizon-pub
-    addr: 172.16.22.19
+    addr: 192.168.100.205
 
   - name: vip-heat-pub
-    addr: 172.16.22.18
+    addr: 192.168.100.206
 
   - name: vip-ceilometer-pub
-    addr: 172.16.22.15
+    addr: 192.168.100.207
 
 
-keystone_vip: 172.16.20.20
-glance_vip: 172.16.20.17
-cinder_vip: 172.16.20.16
-nova_vip: 172.16.20.22
-neutron_vip: 172.16.20.21
-horizon_vip: 172.16.20.19
-heat_vip: 172.16.20.18
-ceilometer_vip: 172.16.20.15
+keystone_vip: 172.16.0.202
+glance_vip: 172.16.0.203
+cinder_vip: 172.16.0.204
+nova_vip: 172.16.0.205
+neutron_vip: 172.16.0.206
+horizon_vip: 172.16.0.207
+heat_vip: 172.16.0.208
+ceilometer_vip: 172.16.0.209
 
-keystone_public_vip: "vip-keystone-pub.example.com"
+keystone_public_vip: "192.168.100.200"
 keystone_admin_vip: "{{ keystone_vip }}"
 keystone_private_vip: "{{ keystone_vip }}"
 
-glance_public_vip: "vip-glance-pub.example.com"
+glance_public_vip: "192.168.100.201"
 glance_admin_vip: "{{ glance_vip }}"
 glance_private_vip: "{{ glance_vip }}"
 
-cinder_public_vip: "vip-cinder-pub.example.com"
+cinder_public_vip: "192.168.100.202"
 cinder_admin_vip: "{{ cinder_vip }}"
 cinder_private_vip: "{{ cinder_vip }}"
 
-nova_public_vip: "vip-nova-pub.example.com"
+nova_public_vip: "192.168.100.203"
 nova_admin_vip: "{{ nova_vip }}"
 nova_private_vip: "{{ nova_vip }}"
 
-neutron_public_vip: "vip-neutron-pub.example.com"
+neutron_public_vip: "192.168.100.204"
 neutron_admin_vip: "{{ neutron_vip }}"
 neutron_private_vip: "{{ neutron_vip }}"
 
-horizon_public_vip: "vip-horizon-pub.example.com"
+horizon_public_vip: "192.168.100.205"
 horizon_private_vip: "{{ horizon_vip }}"
 
-heat_public_vip: "vip-heat-pub.example.com"
+heat_public_vip: "192.168.100.206"
 heat_admin_vip: "{{ heat_vip }}"
 heat_private_vip: "{{ heat_vip }}"
 
-ceilometer_public_vip: "vip-ceilometer-pub.example.com"
+ceilometer_public_vip: "192.168.100.207"
 ceilometer_admin_vip: "{{ ceilometer_vip }}"
 ceilometer_private_vip: "{{ ceilometer_vip }}"
 
@@ -274,27 +238,27 @@ neutron_service_plugins:
   - neutron.services.loadbalancer.plugin.LoadBalancerPlugin
   - neutron.services.metering.metering_plugin.MeteringPlugin
 
+
 neutron_metadata_workers: 20
 neutron_metadata_backlog: 2048
-neutron_metadata_proxy_shared_secret: "{{ lookup('password', inventory_dir + '/credentials/neutron_metadata_proxy_shared_secret chars=hexdigits') }}"
+neutron_metadata_proxy_shared_secret: SECRET
 neutron_dhcp_enable_isolated_metadata: true
-neutron_ml2_type_drivers: vxlan,flat
+neutron_ml2_type_drivers: vlan,vxlan
 neutron_ml2_tenant_network_types: vxlan
-#neutron_network_vlan_ranges: "pnet1:100:200"
-neutron_network_vlan_ranges: "net-ex"
+neutron_ml2_network_vlan_ranges: "pnet1:100:200"
+neutron_ml2_vni_ranges: 10:10000
 neutron_vxlan_vni_ranges: 10:10000
 neutron_vxlan_group: 239.1.1.1
 neutron_ovs_tenant_network_type: vxlan
 neutron_ovs_tunnel_type: vxlan
-neutron_ovs_tunnel_id_ranges: 10:10000
-neutron_ovs_bridge_mappings: "net-ex:br-ex"
-# disable security groups
-neutron_ovs_firewall_driver: "neutron.agent.firewall.NoopFirewallDriver"
+neutron_ovs_tunnel_id_ranges: 
+neutron_ovs_bridges: br-ex
+neutron_ovs_bridge_ifaces: eth0
+neutron_ovs_bridge_mappings: "pnet1:br-ex"
 neutron_agent_tunnel_types: vxlan
+neutron_external_network_bridge: br-ex
 
-# Cisco Nexus standalone plugin for Neutron
-cisco_provider_vlan_auto_create: true
-cisco_provider_vlan_auto_trunk: true
+# Cisco Nexus plugin for Neutron
 cisco_nexus_l3_enable: true
 cisco_nexus_switches:
   - ipaddr: 10.161.0.21
@@ -302,31 +266,31 @@ cisco_nexus_switches:
     password: SECRET
     ssh_port: 22
     hosts:
-      - name: compute-01.example.com
+      - name: compute-01.cloud.local
         port: "port-channel:2"
 
-      - name: compute-02.example.com
+      - name: compute-02.cloud.local
         port: "port-channel:2"
 
-      - name: compute-03.example.com
+      - name: compute-03.cloud.local
         port: "port-channel:2"
 
-      - name: compute-04.example.com
+      - name: compute-04.cloud.local
         port: "port-channel:2"
 
-      - name: compute-05.example.com
+      - name: compute-05.cloud.local
         port: "port-channel:2"
 
-      - name: compute-06.example.com
+      - name: compute-06.cloud.local
         port: "port-channel:2"
 
-      - name: controller-01.example.com
+      - name: controller1.cloud.local
         port: "port-channel:2"
 
-      - name: controller-02.example.com
+      - name: controller2.cloud.local
         port: "port-channel:2"
 
-      - name: controller-03.example.com
+      - name: controller3.cloud.local
         port: "port-channel:2"
 
   - ipaddr: 10.161.0.22
@@ -334,41 +298,39 @@ cisco_nexus_switches:
     password: SECRET
     ssh_port: 22
     hosts:
-      - name: compute-01.example.com
+      - name: compute-01.cloud.local
         port: "port-channel:2"
 
-      - name: compute-02.example.com
+      - name: compute-02.cloud.local
         port: "port-channel:2"
 
-      - name: compute-03.example.com
+      - name: compute-03.cloud.local
         port: "port-channel:2"
 
-      - name: compute-04.example.com
+      - name: compute-04.cloud.local
         port: "port-channel:2"
 
-      - name: compute-05.example.com
+      - name: compute-05.cloud.local
         port: "port-channel:2"
 
-      - name: compute-06.example.com
+      - name: compute-06.cloud.local
         port: "port-channel:2"
 
-      - name: controller-01.example.com
+      - name: controller1.cloud.local
         port: "port-channel:2"
 
-      - name: controller-02.example.com
+      - name: controller2.cloud.local
         port: "port-channel:2"
 
-      - name: controller-03.example.com
+      - name: controller3.cloud.local
         port: "port-channel:2"
 
 ### Horizon
-horizon_internal_servername: vip-horizon-int.example.com
-horizon_public_servername: vip-horizon-pub.example.com
-# A url to make first request and get .secret_key_store generated
-dashboard_first_request_url: "http://vip-horizon-pub.example.com/dashboard"
+horizon_internal_servername: horizon.cloud.local
+horizon_public_servername: cloud.local
 
 ### Ceilometer
-ceilometer_metering_secret: "{{ lookup('password', inventory_dir + '/credentials/ceilometer_metering_secret chars=hexdigits') }}"
+ceilometer_metering_secret: SECRET
 
 # keep last 5 days data only (value is in secs)
 ceilometer_time_to_live: 432000

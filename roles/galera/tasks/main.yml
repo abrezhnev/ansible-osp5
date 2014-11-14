@@ -1,19 +1,40 @@
 ---
-- name: install galera db packages
-  yum: pkg=mariadb-galera-server state=present
-  tags: mysql
-
-- name: install auxiliary database packages
+- name: install database and related packages
   yum: pkg={{ item }} state=present
   with_items:
+    - mariadb-galera-server
     - MySQL-python
     - xinetd
     - nfs-utils
-    - rsync
+      # The following is needed for the galera resource agent, if outside VPN download this file ahead of time and put it in a local repo
+    - http://download.eng.bos.redhat.com/brewroot/packages/resource-agents/3.9.5/33.el7/x86_64/resource-agents-3.9.5-33.el7.x86_64.rpm
   tags: mysql
 
-- name: deploy clustercheck
-  template: src=clustercheck.j2 dest=/etc/sysconfig/clustercheck mode=0644 owner=root group=root
+- name: checking if cluster is already setup
+  command: clustercheck
+  register: db_running
+  ignore_errors: True
+  tags: mysql
+
+- name: deploy local galera.cnf on controllers
+  template: src=galera-local.cnf.j2 dest=/etc/my.cnf.d/galera.cnf mode=0644 owner=root group=root
+  when: db_running.rc != 0
+  tags: mysql
+
+- name: start local mariadb server
+  service: name=mariadb state=started
+  when: db_running.rc != 0
+  tags:
+    - mysql
+
+- name: pause to let database start
+  pause: seconds=60
+  when: db_running.rc != 0
+  tags:
+      - mysql
+
+- name: stop and disable mariadb service
+  service: name=mariadb enabled=no state=stopped
   tags: mysql
 
 - name: deploy mariadb server config file with increased number of max_connections
@@ -54,12 +75,17 @@
   tags: mysql
 
 - name: pause to let galera start and form the cluster
-  pause: seconds=30
+  pause: seconds=120
+  when: db_running.rc != 0
   tags: mysql
 
 - name: create clustercheck database user
   mysql_user: name={{ clustercheck_db_user }} host=localhost password={{ clustercheck_db_pass }} state=present
-  run_once: true
+  tags:
+    - mysql
+
+- name: deploy clustercheck
+  template: src=clustercheck.j2 dest=/etc/sysconfig/clustercheck mode=0644 owner=root group=root
   tags: mysql
 
 - name: create databases

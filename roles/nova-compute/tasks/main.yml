@@ -56,6 +56,8 @@
   openvswitch_bridge: bridge=br-tun state=present
   when: neutron_ovs_tunnel_type is defined
   tags: nova
+  tags:
+    - nova-compute
 
 - name: create ovs bridges
   openvswitch_bridge: bridge={{ item.bridge }} state=present

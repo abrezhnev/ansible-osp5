@@ -206,3 +206,24 @@
 
 - include: cluster-constraints.yml
   tags: neutron
+
+- name: create pacemaker resource for neutron LBaaS agent
+  pcs_resource: command=create name=neutron-lbaas-agent type=systemd:neutron-lbaas-agent group=neutron-agents
+  args:
+    operations:
+      - action: monitor
+        options:
+          start-delay: 10s
+  run_once: true
+  when: use_lbaas
+  tags: neutron
+
+- name: run bridge-create script
+  command: bash /usr/local/bin/bridge-create.sh br-ex {{ ovs_port }}
+  when: use_neutron
+  tags: neutron
+
+- name: pause to let network restart
+  pause: seconds=10
+  tags: neutron
+

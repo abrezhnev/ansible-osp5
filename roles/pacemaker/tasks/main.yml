@@ -8,6 +8,10 @@
   with_items: pacemaker_rpms
   tags: pcs
 
+- name: start pcsd
+  service: name=pcsd enabled=yes state=stopped
+  tags: pcs
+
 - name: set password for the hacluster user
   user: name=hacluster password={{ pcs_cluster_pass_encoded }} update_password=always
   tags: pcs
@@ -73,4 +77,11 @@
   shell: "pcs stonith show fence_{{ item.name }} || pcs stonith create fence_{{ item.name }} fence_{{ item.fencing.agent }} params {{ item.fencing.params }} action=reboot pcmk_host_list={{ item.name }}"
   with_items: controller_nodes
   run_once: true
+  when: use_fencing
+  tags: pcs_fencing
+
+- name: disabling fencing
+  shell: pcs property set stonith-enabled=false
+  run_once: true
+  when: not use_fencing
   tags: pcs_fencing

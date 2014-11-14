@@ -1,0 +1,19 @@
+[controller]
+controller[1:3] primary_if=eth0 private_if=eth1 ovs_bridge=br-ex ovs_port=eth0
+
+[compute]
+compute1 primary_if=eth0 private_if=eth1 ovs_bridge=br-ex ovs_port=eth0
+
+[osd]
+#ceph[1:3]
+
+[osp:children]
+controller
+compute
+
+[mongodb]
+controller[1:3]
+#actl ansible_ssh_host=10.161.1.50
+
+[local]
+localhost ansible_connection=local

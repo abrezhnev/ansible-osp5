@@ -95,7 +95,7 @@
 #  tags: keystone
 
 - name: run dbsync for keystone
-  shell: runuser -s /bin/sh keystone -c '/usr/bin/keystone-manage db_sync'
+  shell: su keystone -s /bin/sh -c "/usr/bin/keystone-manage db_sync"
   run_once: true
   tags: keystone
 
